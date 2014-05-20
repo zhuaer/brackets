@@ -185,6 +185,7 @@ define(function (require, exports, module) {
         if (this._highlightIndex !== null) {
             $items.eq(this._highlightIndex).addClass("highlight");
             
+            // FIXME: don't call when we're just highlighting top item in list and query is blank and highlight hasn't been moved by keyboard ever before?
             this.options.onHighlight(this._displayedResults[this._highlightIndex], this.$input.val());
         }
     };

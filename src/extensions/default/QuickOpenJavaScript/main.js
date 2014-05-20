@@ -35,6 +35,8 @@ define(function (require, exports, module) {
         DocumentManager     = brackets.getModule("document/DocumentManager");
 
 
+    var firstHighlight;
+   
    /** 
     * FileLocation class
     * @constructor
@@ -87,6 +89,7 @@ define(function (require, exports, module) {
         if (!functionList) {
             functionList = createFunctionList();
             matcher.functionList = functionList;
+            firstHighlight = true;
         }
         query = query.slice(query.indexOf("@") + 1, query.length);
         
@@ -115,16 +118,19 @@ define(function (require, exports, module) {
             return true;
         }
     }
-
+    
     /**
      * Scroll top the selected item in the current document (unless no query string entered yet,
      * in which case the topmost list item is irrelevant)
      * @param {?SearchResult} selectedItem
      */
-    function itemFocus(selectedItem, query, force) {
-        if (!selectedItem || (query.length < 2 && !force)) {
+    function itemFocus(selectedItem, query) {
+        var wasFirstHighlight = firstHighlight;
+        firstHighlight = false;
+        if (!selectedItem || (query.length < 2 && wasFirstHighlight)) {
             return;
         }
+        
         var fileLocation = selectedItem.fileLocation;
 
         var from = {line: fileLocation.line, ch: fileLocation.chFrom};
@@ -133,7 +139,7 @@ define(function (require, exports, module) {
     }
 
     function itemSelect(selectedItem, query) {
-        itemFocus(selectedItem, query, true);
+        itemFocus(selectedItem, query);
     }
 
 

@@ -89,9 +89,9 @@ define(function (require, exports, module) {
      * Creates and registers a new QuickOpenPlugin
      *
      * @param { name: string, 
-     *          languageIds: Array.<string>,
+     *          languageIds: !Array.<string>,
      *          done: ?function(),
-     *          search: function(string, !StringMatch.StringMatcher):Array.<SearchResult|string>,
+     *          search: function(string, !StringMatch.StringMatcher):(!Array.<SearchResult|string>|Promise),
      *          match: function(string):boolean,
      *          itemFocus: ?function(?SearchResult|string, string),
      *          itemSelect: function(?SearchResult|string, string),
@@ -105,7 +105,8 @@ define(function (require, exports, module) {
      * name - plug-in name, **must be unique**
      * languageIds - language Ids array. Example: ["javascript", "css", "html"]. To allow any language, pass []. Required.
      * done - called when quick open is complete. Plug-in should clear its internal state. Optional.
-     * search - takes a query string and a StringMatcher (the use of which is optional but can speed up your searches) and returns an array of strings that match the query. Required.
+     * search - takes a query string and a StringMatcher (the use of which is optional but can speed up your searches) and returns
+     *      an array of strings or result objects that match the query; or a Promise that resolves to such an array. Required.
      * match - takes a query string and returns true if this plug-in wants to provide
      *      results for this query. Required.
      * itemFocus - performs an action when a result has been highlighted (via arrow keys, or by becoming top of the list).
@@ -122,15 +123,6 @@ define(function (require, exports, module) {
      * cancels Quick Open (via Esc), those changes are automatically reverted.
      */
     function addQuickOpenPlugin(pluginDef) {
-        // Backwards compatibility (for now) for old fileTypes field, if newer languageIds not specified
-        if (pluginDef.fileTypes && !pluginDef.languageIds) {
-            console.warn("Using fileTypes for QuickOpen plugins is deprecated. Use languageIds instead.");
-            pluginDef.languageIds = pluginDef.fileTypes.map(function (extension) {
-                return LanguageManager.getLanguageForPath("file." + extension).getId();
-            });
-            delete pluginDef.fileTypes;
-        }
-        
         plugins.push(new QuickOpenPlugin(
             pluginDef.name,
             pluginDef.languageIds,
@@ -673,6 +665,7 @@ define(function (require, exports, module) {
                 fileList = files;
                 fileListPromise = null;
                 this._filenameMatcher.reset();
+//                this.searchField.updateResults();
             }.bind(this));
         
         // Prepopulated query
