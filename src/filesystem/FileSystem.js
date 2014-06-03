@@ -183,9 +183,13 @@ define(function (require, exports, module) {
     FileSystem.prototype._dequeueWatchRequest = function () {
         if (this._watchRequests.length > 0) {
             var request = this._watchRequests[0];
+
+            console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Dequeue watch request start" );
             
             request.fn.call(null, function () {
                 // Apply the given callback
+                console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Dequeue watch request finish" );
+                
                 var callbackArgs = arguments;
                 try {
                     request.cb.apply(null, callbackArgs);
@@ -208,6 +212,9 @@ define(function (require, exports, module) {
     FileSystem.prototype._enqueueWatchRequest = function (fn, cb) {
         // Enqueue the given watch/unwatch request
         this._watchRequests.push({fn: fn, cb: cb});
+        
+        
+        console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] this._watchRequests.length after enqueue: " + this._watchRequests.length);
 
         // Begin processing the queue if it is not already being processed
         if (this._watchRequests.length === 1) {
@@ -271,8 +278,10 @@ define(function (require, exports, module) {
                 // no-ops if the impl supports recursiveWatch
                 callback(null);
             } else {
-                // The impl will handle finding all subdirectories to watch. 
+                // The impl will handle finding all subdirectories to watch.
+                console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Enqueuing watch request for: " + entry.fullPath + ", " + commandName);
                 this._enqueueWatchRequest(function (requestCb) {
+                    console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Calling watch request callback for: " + entry.fullPath + ", " + commandName);
                     impl[commandName].call(impl, entry.fullPath, requestCb);
                 }.bind(this), callback);
             }
@@ -900,8 +909,11 @@ define(function (require, exports, module) {
         // Mark this as inactive, but don't delete the entry until the unwatch is complete.
         // This is useful for making sure we don't try to concurrently watch overlapping roots.
         watchedRoot.status = WatchedRoot.INACTIVE;
-        
+
+        console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Unwatching: " + entry.fullPath);
+
         this._unwatchEntry(entry, watchedRoot, function (err) {
+            console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Unwatched: " + entry.fullPath);
             delete this._watchedRoots[fullPath];
             
             this._index.visitAll(function (child) {
@@ -909,6 +921,7 @@ define(function (require, exports, module) {
                     this._index.removeEntry(child);
                 }
             }.bind(this));
+            console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] Cleared children: " + entry.fullPath);
             
             if (err) {
                 console.warn("Failed to unwatch root: ", entry.fullPath, err);

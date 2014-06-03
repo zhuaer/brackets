@@ -533,12 +533,16 @@ define(function (require, exports, module) {
             callback(FileSystemError.NOT_SUPPORTED);
             return;
         }
+        console.log(new Date().toString() + " [" + _brackets_window_timestamp + "] Checking if path is network drive: " + path);
+        
         appshell.fs.isNetworkDrive(path, function (err, isNetworkDrive) {
             if (err || isNetworkDrive) {
                 callback(FileSystemError.UNKNOWN);
                 return;
             }
             
+            console.log(new Date().toString() + " [" + _brackets_window_timestamp + "] About to call Node to watch: " + path);
+
             _nodeDomain.exec("watchPath", path)
                 .then(callback, callback);
         });

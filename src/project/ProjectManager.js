@@ -531,6 +531,7 @@ define(function (require, exports, module) {
      */
     function _renderTree(treeDataProvider) {
         var result = new $.Deferred();
+        console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] starting _renderTree");
 
         // For #1542, make sure the tree is scrolled to the top before refreshing.
         // If we try to do this later (e.g. after the tree has been refreshed), it
@@ -1103,6 +1104,7 @@ define(function (require, exports, module) {
             startLoad = new $.Deferred(),
             resultRenderTree;
 
+        console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] ONE");
         forceFinishRename();    // in case we're in the middle of renaming a file in the project
         
         // Some legacy code calls this API with a non-canonical path
@@ -1110,6 +1112,7 @@ define(function (require, exports, module) {
         
         if (isUpdating) {
             // We're just refreshing. Don't need to unwatch the project root, so we can start loading immediately.
+            console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] TWO");
             startLoad.resolve();
         } else {
             if (_projectRoot && _projectRoot.fullPath === rootPath) {
@@ -1130,11 +1133,13 @@ define(function (require, exports, module) {
                     $(exports).triggerHandler("projectClose", _projectRoot);
                 }
                 
+                console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] THREE");
                 startLoad.resolve();
             });
         }
         
         startLoad.done(function () {
+            console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] FOUR");
             var context = { location : { scope: "user",
                                          layer: "project" } };
 
@@ -1160,6 +1165,7 @@ define(function (require, exports, module) {
                 // Point at a real folder structure on local disk
                 var rootEntry = FileSystem.getDirectoryForPath(rootPath);
                 rootEntry.exists(function (err, exists) {
+                    console.log(new Date().toString() + " [" + window._brackets_window_timestamp + "] FIVE");
                     if (exists) {
                         var projectRootChanged = (!_projectRoot || !rootEntry) ||
                             _projectRoot.fullPath !== rootEntry.fullPath;
@@ -1195,7 +1201,10 @@ define(function (require, exports, module) {
                                 // Allow asynchronous event handlers to finish before resolving result by collecting promises from them
                                 var promises = [];
                                 $(exports).triggerHandler({ type: "projectOpen", promises: promises }, [_projectRoot]);
-                                $.when.apply($, promises).then(result.resolve, result.reject);
+                                $.when.apply($, promises).then(function () {
+                                    result.resolve();
+                                    console.log(new Date().toString() + " [" + _brackets_window_timestamp + "] Done loading project: " + rootPath);
+                                }, result.reject);
                             } else {
                                 $(exports).triggerHandler("projectRefresh", _projectRoot);
                                 result.resolve();
@@ -1462,6 +1471,7 @@ define(function (require, exports, module) {
      *  fails to load.
      */
     function openProject(path) {
+        console.log(new Date().toString() + " [" + _brackets_window_timestamp + "] Loading project: " + path);
 
         var result = new $.Deferred();
 

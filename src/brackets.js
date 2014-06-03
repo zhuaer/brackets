@@ -137,6 +137,8 @@ define(function (require, exports, module) {
     require("file/NativeFileSystem");
     require("file/NativeFileError");
     
+    window._brackets_window_timestamp = new Date().getTime();
+    
     PerfUtils.addMeasurement("brackets module dependencies resolved");
     
     // Local variables
@@ -194,6 +196,7 @@ define(function (require, exports, module) {
         };
 
         AppInit.appReady(function () {
+            console.log(new Date().toString() + " [" + _brackets_window_timestamp + "] Brackets done loading");
             brackets.test.doneLoading = true;
         });
     }

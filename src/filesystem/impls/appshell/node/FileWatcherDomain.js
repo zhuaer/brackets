@@ -90,6 +90,7 @@ function _unwatchPath(path) {
             delete _watcherMap[path];
         }
     }
+    
 }
 
 /**
@@ -97,11 +98,15 @@ function _unwatchPath(path) {
  * @param {string} path File or directory to unwatch.
  */
 function unwatchPath(path) {
+    console.log(new Date().toString() + " node: starting unwatch for " + path);
+
     Object.keys(_watcherMap).forEach(function (keyPath) {
         if (keyPath.indexOf(path) === 0) {
             _unwatchPath(keyPath);
         }
     });
+    
+    console.log(new Date().toString() + " node: finishing unwatch for " + path);    
 }
 
 /**
@@ -110,8 +115,10 @@ function unwatchPath(path) {
  */
 function watchPath(path) {
     if (_watcherMap.hasOwnProperty(path)) {
+        console.log(new Date().toString() + " node: already have watcher for " + path);
         return;
     }
+    console.log(new Date().toString() + " node: creating watcher for " + path);
         
     try {
         var watcher;
@@ -150,12 +157,15 @@ function watchPath(path) {
     } catch (err) {
         console.warn("Failed to watch file " + path + ": " + (err && err.message));
     }
+    console.log(new Date().toString() + " node: done creating watcher for " + path);
 }
 
 /**
  * Un-watch all files and directories.
  */
 function unwatchAll() {
+    console.log(new Date().toString() + " node: starting unwatchAll");    
+
     var path;
     
     for (path in _watcherMap) {
@@ -163,6 +173,8 @@ function unwatchAll() {
             unwatchPath(path);
         }
     }
+    
+    console.log(new Date().toString() + " node: finishing unwatchAll");        
 }
 
 /**

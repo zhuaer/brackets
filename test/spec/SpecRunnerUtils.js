@@ -575,6 +575,7 @@ define(function (require, exports, module) {
                 }
             });
             _testWindow.close();
+            console.log(new Date().toString() + " [" + _testWindow._brackets_window_timestamp + "] Closed Brackets window");
             _testWindow.executeCommand = null;
             _testWindow = null;
         });
