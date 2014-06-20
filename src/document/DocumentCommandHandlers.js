@@ -1327,10 +1327,14 @@ define(function (require, exports, module) {
         );
     }
 
-    /** Show a textfield to rename whatever is currently selected in the sidebar (or current doc if nothing else selected) */
-    function handleFileRename() {
+    /**
+     * Show a textfield to rename whatever is currently selected in the sidebar (or current doc if nothing else selected)
+     * @param {FileSystemEntry=} entry The file or folder to rename. If not specified, uses the selected item in the project
+     *      sidebar if there is one, otherwise uses the currently open document.
+     */
+    function handleFileRename(entry) {
         // Prefer selected sidebar item (which could be a folder)
-        var entry = ProjectManager.getSelectedItem();
+        entry = entry || ProjectManager.getSelectedItem();
         if (!entry) {
             // Else use current file (not selected in ProjectManager if not visible in tree or working set)
             var doc = DocumentManager.getCurrentDocument();

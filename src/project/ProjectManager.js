@@ -667,6 +667,12 @@ define(function (require, exports, module) {
                 if (event.button !== 0) { // 0 = Left mouse button
                     return;
                 }
+            
+                // Only consider this a rename gesture if the click was on the actual text of an item
+                // (not a collapse triangle).
+                if (!$(event.target).is("a")) {
+                    return;
+                }
 
                 var $treenode = $(event.target).closest("li");
                 if ($treenode.is($(_projectTree.jstree("get_selected")))) {
@@ -674,7 +680,8 @@ define(function (require, exports, module) {
                     _mouseupTimeoutId = window.setTimeout(function () {
                         // if we get a double-click, _mouseupTimeoutId will have been set to null by the double-click handler before this runs.
                         if (_mouseupTimeoutId !== null) {
-                            CommandManager.execute(Commands.FILE_RENAME);
+                            // Make sure to do the rename on the original tree node that was clicked.
+                            CommandManager.execute(Commands.FILE_RENAME, $treenode.data("entry"));
                         }
                     }, 500);
                 }
@@ -1467,13 +1474,16 @@ define(function (require, exports, module) {
      * path lies outside the project, or if it doesn't exist.
      *
      * @param {!(File|Directory)} entry File or Directory to show
+     * @param {boolean=} select Whether to select the item.
      * @return {$.Promise} Resolved when done; or rejected if not found
      */
-    function showInTree(entry) {
+    function showInTree(entry, select) {
         return _findTreeNode(entry)
             .done(function ($node) {
-                // jsTree will automatically expand parent nodes to ensure visible
-                _projectTree.jstree("select_node", $node, false);
+                if (select) {
+                    // jsTree will automatically expand parent nodes to ensure visible
+                    _projectTree.jstree("select_node", $node, false);
+                }
             });
     }
     
@@ -1836,7 +1846,8 @@ define(function (require, exports, module) {
      */
     function renameItemInline(entry) {
         // First make sure the item in the tree is visible - jsTree's rename API doesn't do anything to ensure inline input is visible
-        showInTree(entry)
+        // But don't force it to be selected in case the user is trying to rename a folder with a selected child.
+        showInTree(entry, false)
             .done(function ($selected) {
                 // Don't try to rename again if we are already renaming
                 if (_isInRename($selected)) {
